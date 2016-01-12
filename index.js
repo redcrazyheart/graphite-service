@@ -10,7 +10,8 @@ var defaults = {
     prefix: '',
     suffix: '',
     interval: 10000,
-    verbose: true
+    verbose: true,
+    callback: null
 };
 
 function createServer(options) {
@@ -55,10 +56,6 @@ function createServer(options) {
             function (err) {
                 if (err) {
                     return debug('Error sending metrics: ' + err);
-                }
-
-                if (this.options.callback) {
-                    this.options.callback(err, metrics.toString());
                 }
             }
         );
