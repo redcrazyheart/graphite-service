@@ -1,0 +1,21 @@
+{
+  "name": "graphite-service",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "debug": "^2.0.0"
+  },
+  "author": "Aleksandr Boytsov <redcrazyheart@gmail.com>",
+  "homepage": "https://github.com/redcrazyheart/graphite-service",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/redcrazyheart/graphite-service.git"
+  },
+  "license": "ISC",
+  "pre-commit": [
+    "lint",
+    "validate",
+    "test"
+  ]
+}
