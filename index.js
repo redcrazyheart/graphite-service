@@ -1,7 +1,7 @@
 var dgram = require('dgram');
 var util = require('util');
 var EventEmitter = require('events');
-var debug = require('debug')('[graphite]');
+var debug = require('debug')('graphite-service');
 
 var defaults = {
     host: 'localhost',
