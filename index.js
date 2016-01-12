@@ -15,15 +15,27 @@ var defaults = {
 
 function createServer(options) {
     this.options = util._extend(defaults, options);
-    this.client = dgram.createSocket(options.type);
     this.queue = [];
-    this.client.on('close', function () {
-        debug('UDP socket closed');
-    });
 
-    this.client.on('error', function (err) {
-        debug('UDP socket error: ' + err);
-    });
+    this.init = function () {
+        debug('Init Graphite UDP client');
+        this.client = dgram.createSocket(this.options.type);
+        this.client.on('close', function () {
+            debug('UDP socket closed');
+        });
+
+        this.client.on('error', function (err) {
+            debug('UDP socket error: ' + err);
+        });
+        debug('Creating new Graphite UDP client');
+    };
+
+    this.restart = function () {
+        debug('Restart Graphite UDP client');
+        this.client.close();
+        thit.init();
+    };
+
     this.send = function (name, value) {
         if (this.queue.length === 0) {
             return;
@@ -53,8 +65,11 @@ function createServer(options) {
 
         this.queue = [];
     };
+
+    this.init();
+
+    setInterval(this.restart.bind(this), 60000);
     setInterval(this.send.bind(this), this.options.interval);
-    debug('Creating new Graphite UDP client');
 }
 
 util.inherits(createServer, EventEmitter);
