@@ -33,7 +33,7 @@ function createServer(options) {
     this.restart = function () {
         debug('Restart Graphite UDP client');
         this.client.close();
-        thit.init();
+        this.init();
     };
 
     this.send = function (name, value) {
