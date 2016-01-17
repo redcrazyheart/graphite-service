@@ -6,6 +6,9 @@
   "dependencies": {
     "debug": "^2.0.0"
   },
+  "scripts": {
+    "prepublish": "babel es6 --out-dir lib"
+  },
   "author": "Aleksandr Boytsov <redcrazyheart@gmail.com>",
   "homepage": "https://github.com/redcrazyheart/graphite-service",
   "repository": {
@@ -17,5 +20,11 @@
     "lint",
     "validate",
     "test"
-  ]
+  ],
+  "devDependencies": {
+    "babel-cli": "^6.4.0",
+    "babel-plugin-add-module-exports": "^0.1.1",
+    "babel-preset-es2015": "^6.3.13",
+    "babel-preset-stage-0": "^6.3.13"
+  }
 }
