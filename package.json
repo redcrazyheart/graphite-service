@@ -1,13 +1,15 @@
 {
   "name": "graphite-service",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "",
   "main": "index.js",
   "dependencies": {
     "debug": "^2.0.0"
   },
   "scripts": {
-    "prepublish": "babel es6 --out-dir lib"
+    "prepublish": "babel es6 --out-dir lib",
+    "version": "babel es6 --out-dir lib && git add -A",
+    "postversion": "git push && git push --tags"
   },
   "author": "Aleksandr Boytsov <redcrazyheart@gmail.com>",
   "homepage": "https://github.com/redcrazyheart/graphite-service",

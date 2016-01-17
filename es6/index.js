@@ -1,7 +1,7 @@
 import dgram from 'dgram';
 import util from 'util';
 import debug from 'debug';
-import EventEmitter from 'events';
+import path from 'path';
 
 let NODE_ENV = process.env.NODE_ENV;
 let debugLog = debug('graphite-service');
@@ -39,24 +39,28 @@ class graphiteService {
     }
 
     init() {
-        if (this.options.allow[NODE_ENV]) {
-            debugLog('Init Graphite-service UDP client');
-            this.client = dgram.createSocket(this.options.type);
-            this.client.on('close', () => {
-                debugLog('UDP socket closed');
-            });
+        debugLog('Init Graphite-service UDP client');
+        this.client = dgram.createSocket(this.options.type);
+        this.client.on('close', () => {
+            debugLog('UDP socket closed');
+        });
 
-            this.client.on('error', err => {
-                debugLog(`UDP socket error: ${err}`);
-            });
+        this.client.on('error', err => {
+            debugLog(`UDP socket error: ${err}`);
+        });
 
-            this.client.on('add', data => {
-                this.queue.push(data);
-            });
+        this.client.on('add', data => {
+            this.queue.push(data);
+        });
 
-            setInterval(this.send.bind(this), this.options.interval);
-            debugLog('Creating new Graphite-service UDP client');
-        }
+        setInterval(this.beforeSend.bind(this), this.options.interval);
+        debugLog('Creating new Graphite-service UDP client');
+    }
+
+    event(event) {
+        var options = this.options;
+        options.host = path.join(this.options.host, '/event');
+        this.send(new Buffer(JSON.stringify(event)), options);
     }
 
     start(name) {
@@ -79,55 +83,56 @@ class graphiteService {
         delete this.queue[name];
     }
 
-    send() {
+    beforeSend() {
         if (this.queue.length === 0) {
             return;
         }
-
         var metrics = new Buffer(this.queue.join('\n'));
+        this.send(metrics);
+    }
+    send(metrics, options) {
+        if (this.options.allow[NODE_ENV]) {
+            options = options || this.options;
+            debugLog(`Sending: \n ${metrics} metrics to
+                ${this.options.host}: ${this.options.port}`);
 
-        debugLog(`Sending: ${this.queue.length} metrics to
-            ${this.options.host}: ${this.options.port}`);
-
-        this.client.send(
-            metrics,
-            0,
-            metrics.length,
-            this.options.port,
-            this.options.host,
-            err => {
-                if (err) {
-                    return debugLog(`Error sending metrics: ${err}`);
+            this.client.send(
+                metrics,
+                0,
+                metrics.length,
+                options.port,
+                options.host,
+                err => {
+                    if (err) {
+                        return debugLog(`Error sending metrics: ${err}`);
+                    }
                 }
-            }
-        );
-
+            );
+        }
         this.queue = [];
+
     }
 
     add(name, value, type = null) {
-        if (this.options.allow[NODE_ENV]) {
+        var itemQueue = name;
 
-            var itemQueue = name;
-
-            if (this.options.prefix) {
-                itemQueue = `${this.options.prefix}.${itemQueue}`;
-            }
-
-            if (this.options.suffix) {
-                itemQueue = `${itemQueue}.${this.options.suffix}`;
-            }
-
-            if (!type) {
-                value = ` ${value} ${(new Date()).getTime()}`;
-            } else {
-                value = `:${value}|${type}`;
-            }
-
-            itemQueue = itemQueue + value;
-            this.client.emit('add', itemQueue);
-            debugLog(`Adding metric to queue: ${itemQueue}`);
+        if (this.options.prefix) {
+            itemQueue = `${this.options.prefix}.${itemQueue}`;
         }
+
+        if (this.options.suffix) {
+            itemQueue = `${itemQueue}.${this.options.suffix}`;
+        }
+
+        if (!type) {
+            value = ` ${value} ${(new Date()).getTime()}`;
+        } else {
+            value = `:${value}|${type}`;
+        }
+
+        itemQueue = itemQueue + value;
+        this.client.emit('add', itemQueue);
+        debugLog(`Adding metric to queue: ${itemQueue}`);
     }
 };
 
