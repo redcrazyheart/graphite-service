@@ -12,7 +12,6 @@ let defaults = {
     prefix: '',
     suffix: '',
     interval: 10000,
-    verbose: true,
     callback: null,
     allow: {
         production: true,
@@ -27,6 +26,7 @@ class graphiteService {
 
     constructor(options, client) {
         this.options = util._extend(defaults, options);
+        this.queue = [];
         if (client) {
             this.client = client;
         } else {
@@ -42,17 +42,16 @@ class graphiteService {
         if (this.options.allow[NODE_ENV]) {
             debugLog('Init Graphite-service UDP client');
             this.client = dgram.createSocket(this.options.type);
-            this.client.on('close', function () {
+            this.client.on('close', () => {
                 debugLog('UDP socket closed');
             });
 
-            this.client.on('error', function (err) {
+            this.client.on('error', err => {
                 debugLog(`UDP socket error: ${err}`);
             });
 
-            let that = this;
-            this.client.on('add', function (data) {
-                that.queue.push(data);
+            this.client.on('add', data => {
+                this.queue.push(data);
             });
 
             setInterval(this.send.bind(this), this.options.interval);
@@ -96,7 +95,7 @@ class graphiteService {
             metrics.length,
             this.options.port,
             this.options.host,
-            function (err) {
+            err => {
                 if (err) {
                     return debugLog(`Error sending metrics: ${err}`);
                 }
@@ -107,7 +106,6 @@ class graphiteService {
     }
 
     add(name, value, type = null) {
-        debugLog(`add: ${name}:${value} ${type}`);
         if (this.options.allow[NODE_ENV]) {
 
             var itemQueue = name;
