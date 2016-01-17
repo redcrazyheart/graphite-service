@@ -71,11 +71,11 @@ class graphiteService {
         };
     };
 
-    end(name) {
+    end(name, replaceName) {
         debugLog(`end: ${name}`);
         if (this.queue[name]) {
             this.add(
-                name,
+                replaceName || name,
                 new Date() - this.queue[name].value,
                 this.queue[name].type
             );
