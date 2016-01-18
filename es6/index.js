@@ -13,10 +13,7 @@ let defaults = {
     suffix: '',
     interval: 10000,
     callback: null,
-    allow: {
-        production: true,
-        development: false
-    }
+    allow: false
 };
 
 class graphiteService {
@@ -91,7 +88,7 @@ class graphiteService {
         this.send(metrics);
     }
     send(metrics, options) {
-        if (this.options.allow[NODE_ENV]) {
+        if (this.options.allow) {
             options = options || this.options;
             debugLog(`Sending: \n ${metrics} metrics to
                 ${this.options.host}: ${this.options.port}`);
